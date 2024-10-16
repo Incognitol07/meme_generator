@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 import requests
 import random
 
@@ -22,6 +22,11 @@ def get_meme():
 def index():
     meme_pic, meme_name = get_meme()  # Get a random meme
     return render_template("index.html", meme_pic=meme_pic, meme_name=meme_name)
+
+@app.route("/get_meme")
+def get_new_meme():
+    meme_pic, meme_name = get_meme()  # Get a new random meme
+    return jsonify(meme_pic=meme_pic, meme_name=meme_name)  # Return as JSON
 
 if __name__ == "__main__":
     app.run(debug=True)

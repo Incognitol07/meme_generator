@@ -44,14 +44,42 @@
         .refresh-btn:hover {
             background-color: #9b70d4;
         }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #bb86fc; /* Change color to match the button */
+        }
     </style>
+    <script>
+        async function getNewMeme() {
+            // Show loading message
+            const loadingMessage = document.getElementById('loading');
+            loadingMessage.style.display = 'block';
+
+            try {
+                const response = await fetch('/get_meme'); // Fetch new meme from the Flask endpoint
+                const data = await response.json(); // Parse JSON response
+
+                // Update the meme image and name on the page
+                document.getElementById('meme-pic').src = data.meme_pic;
+                document.getElementById('meme-name').innerText = data.meme_name;
+            } catch (error) {
+                console.error('Error fetching new meme:', error);
+            } finally {
+                // Hide loading message after fetching
+                loadingMessage.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Random Meme Generator</h1>
     <div class="meme-container">
-        <img src="{{ meme_pic }}" alt="Random Meme">
-        <p class="meme-name">{{ meme_name }}</p>
+        <img id="meme-pic" src="{{ meme_pic }}" alt="Random Meme">
+        <p class="meme-name" id="meme-name">{{ meme_name }}</p>
+        <p id="loading" class="loading">Loading new meme...</p> <!-- Loading message -->
     </div>
-    <button class="refresh-btn" onclick="window.location.reload()">Get New Meme</button>
+    <button class="refresh-btn" onclick="getNewMeme()">Get New Meme</button>
 </body>
 </html>
