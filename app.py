@@ -1,4 +1,5 @@
-from flask import Flask, render_template, jsonify
+import os
+from flask import Flask, render_template, jsonify, request
 import requests
 import random
 
@@ -27,6 +28,30 @@ def index():
 def get_new_meme():
     meme_pic, meme_name = get_meme()  # Get a new random meme
     return jsonify(meme_pic=meme_pic, meme_name=meme_name)  # Return as JSON
+
+@app.route('/get_shareable_link', methods=['POST'])
+def get_shareable_link():
+    data = request.json
+    meme_url = data.get('meme_url')
+    
+    # Generate a unique filename
+    filename = "meme.jpg"
+    
+    # Save the image to a public directory
+    public_dir = os.path.join(app.static_folder, 'shared_memes')
+    os.makedirs(public_dir, exist_ok=True)
+    
+    # Download and save the image
+    import requests
+    response = requests.get(meme_url)
+    if response.status_code == 200:
+        with open(os.path.join(public_dir, filename), 'wb') as f:
+            f.write(response.content)
+    
+    # Generate the shareable link
+    shareable_link = f"{request.host_url}static/shared_memes/{filename}"
+    
+    return jsonify({'shareable_link': shareable_link})
 
 if __name__ == "__main__":
     app.run(debug=True)
