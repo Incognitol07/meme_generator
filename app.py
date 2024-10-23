@@ -54,4 +54,4 @@ def get_shareable_link():
     return jsonify({'shareable_link': shareable_link})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
