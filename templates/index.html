@@ -172,6 +172,7 @@
         justify-content: center;
         gap: 10px;
         flex-wrap: wrap;
+        margin-bottom: 20px;
       }
       .share-option {
         font-size: 24px;
@@ -212,17 +213,6 @@
         <p id="meme-name">{{ meme_name }}</p>
         <div class="loader" id="loader"></div>
       </div>
-      <div class="button-container">
-        <button class="btn funny-btn" onclick="triggerFunnyEffect()">
-          <i class="fas fa-laugh"></i> Funny!
-        </button>
-        <button class="btn refresh-btn" onclick="getNewMeme()">
-          Get New Meme
-        </button>
-        <button class="btn share-btn" onclick="toggleShareOptions()">
-          Share Meme
-        </button>
-      </div>
       <div class="share-options" id="shareOptions">
         <i
           class="share-option fab fa-facebook"
@@ -244,6 +234,17 @@
           class="share-option fab fa-telegram"
           onclick="shareToSocial('telegram')"
         ></i>
+      </div>
+      <div class="button-container">
+        <button class="btn funny-btn" onclick="triggerFunnyEffect()">
+          <i class="fas fa-laugh"></i> Funny!
+        </button>
+        <button class="btn refresh-btn" onclick="getNewMeme()">
+          Get New Meme
+        </button>
+        <button class="btn share-btn" onclick="toggleShareOptions()">
+          Share Meme
+        </button>
       </div>
     </div>
     <div id="toast">Meme shared successfully!</div>
