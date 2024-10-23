@@ -1,85 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/static/favicon.ico">
-    <title>Meme Flask</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/static/favicon.ico" />
+    <title>Meme Flask - Random Meme Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            text-align: center;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+      :root {
+        --primary-color: #bb86fc;
+        --background-color: #121212;
+        --surface-color: #1e1e1e;
+        --on-surface-color: #e0e0e0;
+        --button-hover-color: #9b70d4;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: var(--background-color);
+        color: var(--on-surface-color);
+        text-align: center;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        overflow: scroll;
+      }
+      .container {
+        max-width: 800px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+      }
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        color: var(--primary-color);
+      }
+      .meme-container {
+        background-color: var(--surface-color);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+      .meme-container:hover {
+        transform: translateY(-5px);
+      }
+      #meme-pic {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      #meme-name {
+        font-size: 1.2rem;
+        margin-top: 20px;
+        font-weight: 500;
+      }
+      .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 12px 24px;
+        font-size: 1rem;
+        background-color: var(--primary-color);
+        color: var(--background-color);
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-weight: 500;
+      }
+      .btn:hover {
+        background-color: var(--button-hover-color);
+        transform: translateY(-2px);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      .share-btn {
+        background-color: #4caf50;
+      }
+      .share-btn:hover {
+        background-color: #45a049;
+      }
+      .funny-btn {
+        background-color: #ffde21;
+      }
+      .funny-btn:hover {
+        background-color: #ffd32c;
+      }
+      .loader {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 5px solid var(--surface-color);
+        border-top: 5px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
         }
-        .meme-container {
-            max-width: 600px;
-            width: 100%;
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
         }
-        img {
-            max-width: 100%;
-            border-radius: 10px;
+      }
+      #toast {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        padding: 16px;
+        position: fixed;
+        z-index: 2;
+        left: 50%;
+        bottom: 30px;
+      }
+      #toast.show {
+        visibility: visible;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      }
+      @keyframes fadein {
+        from {
+          bottom: 0;
+          opacity: 0;
         }
-        .refresh-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #bb86fc;
-            color: #121212;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        to {
+          bottom: 30px;
+          opacity: 1;
         }
-        .refresh-btn:hover {
-            background-color: #9b70d4;
+      }
+      @keyframes fadeout {
+        from {
+          bottom: 30px;
+          opacity: 1;
         }
-        .loading {
-            display: none;
-            margin-top: 20px;
-            font-size: 1rem;
-            color: #bb86fc; /* Change color to match the button */
+        to {
+          bottom: 0;
+          opacity: 0;
         }
+      }
+      .share-options {
+        display: none;
+        margin-top: 20px;
+      }
+      .share-options.show {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .share-option {
+        font-size: 24px;
+        color: var(--on-surface-color);
+        cursor: pointer;
+        transition: color 0.3s ease;
+      }
+      .share-option:hover {
+        color: var(--primary-color);
+      }
+      .emoji {
+        position: fixed;
+        font-size: 400px;
+        user-select: none;
+        will-change: transform;
+        z-index: 0;
+      }
+      @keyframes flyEmoji {
+        0% {
+          transform: translate(var(--start-x), var(--start-y)) scale(0);
+          opacity: 0;
+        }
+        25% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--end-x), var(--end-y)) scale(1);
+          opacity: 0;
+        }
+      }
     </style>
-    <script>
-        async function getNewMeme() {
-            // Show loading message
-            const loadingMessage = document.getElementById('loading');
-            loadingMessage.style.display = 'block';
-
-            try {
-                const response = await fetch('/get_meme'); // Fetch new meme from the Flask endpoint
-                const data = await response.json(); // Parse JSON response
-
-                // Update the meme image and name on the page
-                document.getElementById('meme-pic').src = data.meme_pic;
-                document.getElementById('meme-name').innerText = data.meme_name;
-            } catch (error) {
-                console.error('Error fetching new meme:', error);
-            } finally {
-                // Hide loading message after fetching
-                loadingMessage.style.display = 'none';
-            }
-        }
-    </script>
-</head>
-<body>
-    <h1>Random Meme Generator</h1>
-    <div class="meme-container">
-        <img id="meme-pic" src="{{ meme_pic }}" alt="Random Meme">
-        <p class="meme-name" id="meme-name">{{ meme_name }}</p>
-        <p id="loading" class="loading">Loading new meme...</p> <!-- Loading message -->
+  </head>
+  <body>
+    <div class="container">
+      <h1>Random Meme Generator</h1>
+      <div class="meme-container">
+        <img id="meme-pic" src="{{ meme_pic }}" alt="Random Meme" />
+        <p id="meme-name">{{ meme_name }}</p>
+        <div class="loader" id="loader"></div>
+      </div>
+      <div class="button-container">
+        <button class="btn funny-btn" onclick="triggerFunnyEffect()">
+          <i class="fas fa-laugh"></i> Funny!
+        </button>
+        <button class="btn refresh-btn" onclick="getNewMeme()">
+          Get New Meme
+        </button>
+        <button class="btn share-btn" onclick="toggleShareOptions()">
+          Share Meme
+        </button>
+      </div>
+      <div class="share-options" id="shareOptions">
+        <i
+          class="share-option fab fa-facebook"
+          onclick="shareToSocial('facebook')"
+        ></i>
+        <i
+          class="share-option fab fa-twitter"
+          onclick="shareToSocial('twitter')"
+        ></i>
+        <i
+          class="share-option fab fa-reddit"
+          onclick="shareToSocial('reddit')"
+        ></i>
+        <i
+          class="share-option fab fa-whatsapp"
+          onclick="shareToSocial('whatsapp')"
+        ></i>
+        <i
+          class="share-option fab fa-telegram"
+          onclick="shareToSocial('telegram')"
+        ></i>
+      </div>
     </div>
-    <button class="refresh-btn" onclick="getNewMeme()">Get New Meme</button>
-</body>
+    <div id="toast">Meme shared successfully!</div>
+    <script>
+      const emojis = [
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+        "😂",
+        "🤣",
+        "😆",
+        "😅",
+        "😁",
+        "🥳",
+        "🤪",
+      ];
+      const emojiContainer = document.body;
+
+      function getRandomEmoji() {
+        return emojis[Math.floor(Math.random() * emojis.length)];
+      }
+
+      function createEmoji() {
+        const emoji = document.createElement("div");
+        emoji.className = "emoji";
+        emoji.textContent = getRandomEmoji();
+
+        const startX = Math.random() * window.innerWidth;
+        const startY = window.innerHeight;
+        const endX = Math.random() * window.innerWidth;
+        const endY = -100;
+
+        emoji.style.setProperty("--start-x", `${startX}px`);
+        emoji.style.setProperty("--start-y", `${startY}px`);
+        emoji.style.setProperty("--end-x", `${endX}px`);
+        emoji.style.setProperty("--end-y", `${endY}px`);
+
+        emoji.style.left = "0";
+        emoji.style.top = "0";
+        emoji.style.animation = `flyEmoji 2s ease-out forwards`;
+
+        emojiContainer.appendChild(emoji);
+
+        setTimeout(() => {
+          emojiContainer.removeChild(emoji);
+        }, 2000);
+      }
+
+      function triggerFunnyEffect() {
+        for (let i = 0; i < 30; i++) {
+          setTimeout(createEmoji, i * 50);
+        }
+      }
+
+      async function getNewMeme() {
+        const loader = document.getElementById("loader");
+        const memeContainer = document.querySelector(".meme-container");
+        loader.style.display = "block";
+        memeContainer.style.opacity = "0.5";
+        try {
+          const response = await fetch("/get_meme");
+          const data = await response.json();
+          document.getElementById("meme-pic").src = data.meme_pic;
+          document.getElementById("meme-name").innerText = data.meme_name;
+        } catch (error) {
+          console.error("Error fetching new meme:", error);
+        } finally {
+          loader.style.display = "none";
+          memeContainer.style.opacity = "1";
+        }
+      }
+
+      function toggleShareOptions() {
+        const shareOptions = document.getElementById("shareOptions");
+        shareOptions.classList.toggle("show");
+      }
+
+      async function shareToSocial(platform) {
+        const memeUrl = document.getElementById("meme-pic").src;
+        const memeName = document.getElementById("meme-name").innerText;
+        const shareText = `Check out this meme: ${memeName}`;
+        try {
+          // Download the image
+          const response = await fetch(memeUrl);
+          const blob = await response.blob();
+          const file = new File([blob], `${memeName}.jpg`, {
+            type: "image/jpeg",
+          });
+
+          // Sharing logic based on platform
+          switch (platform) {
+            case "facebook":
+              window.open(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                  window.location.href
+                )}`,
+                "_blank"
+              );
+              break;
+            case "twitter":
+              window.open(
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  shareText
+                )}&url=${encodeURIComponent(window.location.href)}`,
+                "_blank"
+              );
+              break;
+            case "reddit":
+              window.open(
+                `https://reddit.com/submit?url=${encodeURIComponent(
+                  window.location.href
+                )}&title=${encodeURIComponent(shareText)}`,
+                "_blank"
+              );
+              break;
+            case "whatsapp":
+            case "telegram":
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                  files: [file],
+                  title: "Random Meme",
+                  text: shareText,
+                });
+              } else {
+                const shareUrl =
+                  platform === "whatsapp"
+                    ? `https://api.whatsapp.com/send?text=${encodeURIComponent(
+                        shareText + " " + window.location.href
+                      )}`
+                    : `https://t.me/share/url?url=${encodeURIComponent(
+                        window.location.href
+                      )}&text=${encodeURIComponent(shareText)}`;
+                window.open(shareUrl, "_blank");
+              }
+              break;
+          }
+          showToast(`Shared to ${platform}`);
+        } catch (error) {
+          console.error("Error sharing meme:", error);
+          showToast("Error sharing meme. Please try again.");
+        }
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = "show";
+        setTimeout(() => {
+          toast.className = toast.className.replace("show", "");
+        }, 3000);
+      }
+    </script>
+  </body>
 </html>
